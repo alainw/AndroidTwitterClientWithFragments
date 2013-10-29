@@ -1,78 +1,41 @@
 package com.yahoo.apps.tweetsclient;
 
-import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import android.app.Activity;
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.ActionBar.TabListener;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListView;
 
-import com.activeandroid.ActiveAndroid;
-import com.activeandroid.query.Delete;
-import com.activeandroid.query.Select;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.yahoo.apps.tweetsclient.models.Tweet;
-import com.yahoo.apps.tweetsclient.models.User;
+import com.yahoo.apps.tweetsclient.fragments.MentionsFragment;
+import com.yahoo.apps.tweetsclient.fragments.TimelineFragment;
 
-public class TimelineActivity extends Activity {
+public class TimelineActivity extends FragmentActivity implements TabListener {
 
 	public static final int REQ_OPTIONS_OK = 1;
-	
-	private ListView lvTweets;  
-	private List<Tweet> tweets;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
 		Log.d("DEBUG", "creating timeline activity"); 
-		lvTweets = (ListView) findViewById(R.id.lvTweets); 
-        refresh();
-	} 
-
-	private void refresh() {
-		tweets = new Select().from(Tweet.class).execute(); // returns in desired order
-		Log.d("DEBUG", "tweets from cache: " + (tweets==null ? "null":tweets));
-		if (tweets != null && tweets.size() > 0) {
-		    lvTweets.setAdapter(new TweetsAdapter(getBaseContext(), tweets));
-		}
-		TweetsClientApp.getRestClient().getHomeTimeline(
-			    new JsonHttpResponseHandler() {
-			        @Override
-					public void onFailure(Throwable arg0, JSONArray arg1) { 
-			        	Log.d("DEBUG", "JSONArray: " + arg0 + " " + arg1);  
-					}
-
-					@Override
-					public void onFailure(Throwable arg0, JSONObject arg1) {
-						Log.d("DEBUG", "JSONObject: " + arg0 + " " + arg1);    
-					} 
-	 
-					@Override  
-			        public void onSuccess(JSONArray jsonTweets) {
-			        	tweets = Tweet.fromJson(jsonTweets);
-			        	TweetsAdapter adapter = new TweetsAdapter(getBaseContext(), tweets);
-			    		lvTweets.setAdapter(adapter);
-			    		ActiveAndroid.beginTransaction();
-			    		try {
-			    			new Delete().from(User.class).execute();
-			    			new Delete().from(Tweet.class).execute();
-			    		    for (Tweet t : tweets) {
-			    		    	//Log.d("DEBUG", "Saving: " + t.getBody() + ", user: " + t.getUser());
-			    		    	t.save();
-			    		    }
-			    		    ActiveAndroid.setTransactionSuccessful();
-			    		} finally {
-			    			ActiveAndroid.endTransaction();
-			    		}
-			        }  
-			    });		
+		setupNavigationMenu();
+	}  
+	
+	private void setupNavigationMenu() {
+        ActionBar actionBar = getActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        actionBar.setDisplayShowTitleEnabled(true);
+        Tab tabHome = actionBar.newTab().setText("Home").setTag("HomeTimelineFragment").setIcon(R.drawable.ic_home).setTabListener(this);
+        Tab tabMentions = actionBar.newTab().setText("Mentions").setTag("MentionsTimelineFragment").setIcon(R.drawable.ic_mentions).setTabListener(this);
+        actionBar.addTab(tabHome);
+        actionBar.addTab(tabMentions);
+        actionBar.selectTab(tabHome);
 	}
 	
 	@Override
@@ -81,21 +44,35 @@ public class TimelineActivity extends Activity {
 		getMenuInflater().inflate(R.menu.timeline, menu);
 		return true;
 	}
-
-	public void onClickRefresh(MenuItem mi) {
-	    refresh();	
-	}
 	
 	public void onClickCompose(MenuItem mi) { 
 	    Intent i = new Intent(getApplicationContext(), ComposeTweetActivity.class);
 	    startActivityForResult(i, REQ_OPTIONS_OK);
 	}
 	
+	public void onClickProfile(MenuItem mi) {
+	    Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
+	    startActivity(i);
+	}
+
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (resultCode == RESULT_OK && requestCode == REQ_OPTIONS_OK) {
-		     refresh();
-	    }
+	public void onTabReselected(Tab tab, FragmentTransaction ft) {
+	}
+
+	@Override
+	public void onTabSelected(Tab tab, FragmentTransaction ft) {
+		FragmentManager fm = getSupportFragmentManager();
+		android.support.v4.app.FragmentTransaction fts = fm.beginTransaction();
+		if (tab.getTag().equals("HomeTimelineFragment")) {
+		    fts.replace(R.id.flContainer, new TimelineFragment());	
+		} else if (tab.getTag().equals("MentionsTimelineFragment")) {
+			fts.replace(R.id.flContainer, new MentionsFragment());
+		}
+		fts.commit();
+	}
+
+	@Override
+	public void onTabUnselected(Tab tab, FragmentTransaction ft) {	
 	}	
 	
 }

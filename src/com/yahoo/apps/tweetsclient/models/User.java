@@ -62,6 +62,10 @@ public class User extends Model {
         return baseModel.getInt("friends_count");
     }
 
+    public String getTagline() {
+    	return baseModel.getString("description");
+    }
+    
     public String toString() {
     	return "name: " + name + " screen name " + screenName + "profile url: " + profileImageUrl;
     }

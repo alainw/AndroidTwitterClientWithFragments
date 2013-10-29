@@ -3,8 +3,8 @@ package com.yahoo.apps.tweetsclient;
 import java.util.List; 
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +27,7 @@ public class TweetsAdapter extends ArrayAdapter<Tweet> {
 			LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.tweet_item, null);
 		}
-		Tweet t = getItem(position);
+		final Tweet t = getItem(position);
 		
 		ImageView ivProfile = (ImageView) convertView.findViewById(R.id.ivProfile);
 		ImageLoader.getInstance().displayImage(t.getUser().getProfileImageUrl() , ivProfile);
@@ -39,7 +39,17 @@ public class TweetsAdapter extends ArrayAdapter<Tweet> {
 		
 		TextView tvBody = (TextView) convertView.findViewById(R.id.tvBody);
 		tvBody.setText(Html.fromHtml(t.getBody()));
-		 
+
+		// Is there a more efficient way to do this? Instead of a new listener for new row?
+		ivProfile.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+			    //Log.d("DEBUG", "Getting data for: " + t.getUser().getScreenName()); 
+			    Intent i = new Intent(v.getContext(), ProfileActivity.class);
+			    i.putExtra("screenName", t.getUser().getScreenName());
+			    v.getContext().startActivity(i);
+			}
+		});		
 		return convertView;
 	}
 	

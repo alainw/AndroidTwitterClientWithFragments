@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="10"
+        android:minSdkVersion="11"
         android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,9 +19,9 @@
         android:theme="@style/AppTheme" >
         <meta-data
             android:name="AA_DB_NAME"
-            android:value="TweetsClient.db" />
+            android:value="TweetsClient2.db" />
         <meta-data
-            android:name="AA_DB_VERSION" 
+            android:name="AA_DB_VERSION"
             android:value="1" />
 
         <activity
@@ -50,6 +50,10 @@
         <activity
             android:name="com.yahoo.apps.tweetsclient.ComposeTweetActivity"
             android:label="@string/title_activity_compose_tweet" >
+        </activity>
+        <activity
+            android:name="com.yahoo.apps.tweetsclient.ProfileActivity"
+            android:label="@string/title_activity_profile" >
         </activity>
     </application>
 

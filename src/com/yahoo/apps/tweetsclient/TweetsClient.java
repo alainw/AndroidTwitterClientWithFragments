@@ -28,7 +28,7 @@ public class TweetsClient extends OAuthBaseClient {
     public static final Class<? extends Api> REST_API_CLASS = TwitterApi.class; // Change this
     public static final String REST_URL = "https://api.twitter.com/1.1"; // Change this, base API URL
     public static final String REST_CONSUMER_KEY = "SHXnuDybBZ1NXS14JO5M1g";       // Change this
-    public static final String REST_CONSUMER_SECRET = "DvYfdJib2NeaYN7T4n0HLuebbdD6DFAM9BxzkCaHc"; // Is there a better way to hardcoding this value???
+    public static final String REST_CONSUMER_SECRET = "DvYfdJib2NeaYN7T4n0HLuebbdD6DFAM9BxzkCaHc"; // Is there a better way to hard code this value???
     public static final String REST_CALLBACK_URL = "oauth://tweetsclient"; // Change this (here and in manifest)
     
     public TweetsClient(Context context) {
@@ -58,12 +58,33 @@ public class TweetsClient extends OAuthBaseClient {
     	Log.d("TWEETS", "url: " + url);
     	client.get(url, null, handler);
     }
-    
-    public void getUserInfo(AsyncHttpResponseHandler handler) {
-       String url = getApiUrl("account/verify_credentials.json");
-       Log.d("TWEETS", "url: " + url);
-       client.get(url, null, handler);
+
+    public void getMentionsTimeline(AsyncHttpResponseHandler handler) { 
+    	String url = getApiUrl("statuses/mentions_timeline.json");
+    	Log.d("TWEETS", "url: " + url);
+    	client.get(url, null, handler);
     }
+
+    public void getUserInfo(AsyncHttpResponseHandler handler) {
+         getUserInfo(null, handler);
+    }
+    
+    public void getUserInfo(String user, AsyncHttpResponseHandler handler) {
+        String query = ((user == null) ? "account/verify_credentials.json" : "users/show.json?screen_name="+user);
+        String url = getApiUrl(query);
+        Log.d("TWEETS", "url: " + url);
+        client.get(url, null, handler);
+    }
+
+    public void getUserTimeline(AsyncHttpResponseHandler handler) {
+        getUserTimeline(null, handler);
+    }
+    
+    public void getUserTimeline(String user, AsyncHttpResponseHandler handler) {
+        String url = getApiUrl("statuses/user_timeline.json" + ((user==null) ? "" : "?screen_name=" + user));
+        Log.d("TWEETS", "url: " + url);
+        client.get(url, null, handler);
+     }
     
     public void submitTweet(String tweet, AsyncHttpResponseHandler handler) {
         String url = getApiUrl("statuses/update.json?status=" + URLEncoder.encode(tweet));	
